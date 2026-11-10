@@ -1,4 +1,5 @@
 build/
 vendor/
+refs/
 __pycache__/
 *.blend1

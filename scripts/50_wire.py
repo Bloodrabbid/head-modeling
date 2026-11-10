@@ -1,5 +1,5 @@
-"""Quad wireframe sheet of the source head (Head_source in out/head_source.blend)."""
-import bpy, sys, os, math
+import os
+import bpy, sys, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths as P
 import view as Vw, render_util as R
@@ -17,5 +17,5 @@ b = ink.node_tree.nodes['Principled BSDF']; b.inputs['Base Color'].default_value
 src.data.materials.clear(); src.data.materials.append(clay); src.data.materials.append(ink)
 m = src.modifiers.new('w', 'WIREFRAME'); m.thickness = 0.0005; m.use_replace = False; m.material_offset = 1; m.use_even_offset = False
 bb = [src.matrix_world @ v.co for v in src.data.vertices]; top = max(v.z for v in bb)
-p = Vw.shots(sc, P.WORK + 'wire', [('front', 0, 0), ('q', 40, 0), ('side', 90, 0), ('back', 150, 5)], (0, -0.01, top - 0.125), dist=0.78, res=(640, 760), samples=24)
+p = Vw.shots(sc, P.WORK + 'wire', [('front', 0, 0), ('q', 40, 0), ('side', 90, 0), ('back', 150, 5)], (0, -0.011, top - 0.14), dist=0.87, res=(640, 760), samples=24)
 R.sheet(p, P.OUT + 'preview_wireframe.png')

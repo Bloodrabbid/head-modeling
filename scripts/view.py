@@ -1,3 +1,4 @@
+import os
 """Preview renders of a .blend made by the v2 pipeline (perspective camera, like the reference viewer)."""
 import sys, os, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

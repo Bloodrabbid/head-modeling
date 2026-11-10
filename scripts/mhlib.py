@@ -1,11 +1,13 @@
 """Minimal MakeHuman data readers: base mesh, morph targets, proxies (.mhclo). Pure numpy.
 MakeHuman space: decimetres, Y up, Z toward the viewer. to_blender() -> metres, Z up, face toward -Y."""
 import os, re
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths as P
 import numpy as np
 
-import paths as _P
-DATA = _P.MH_DATA
-PACK = _P.MH_PACK
+DATA = P.MH_DATA + ''
+PACK = P.MH_PACK + ''
 TGT = DATA + '/targets'
 
 

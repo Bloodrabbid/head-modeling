@@ -1,10 +1,11 @@
+import os
 """v2 checks on the shipped files: re-import every GLB and measure it; draw UV layout and wireframe sheets."""
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths as P
 import numpy as np, bpy, bmesh
 from PIL import Image, ImageDraw
-import paths as P
-OUT = P.OUT
+OUT = P.OUT + ''
 rep = {}
 for lod in ('head_lod0', 'head_lod1', 'head_lod2'):
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -12,13 +13,14 @@ for lod in ('head_lod0', 'head_lod1', 'head_lod2'):
     bpy.ops.import_scene.gltf(filepath=OUT + lod + '.glb')
     r = {}; total = 0
     for o in bpy.data.objects:
-        if o.type != 'MESH': continue
+        if o.type != 'MESH' or not o.data.materials: continue
         me = o.data; bm = bmesh.new(); bm.from_mesh(me)
         t = sum(len(f.verts) - 2 for f in bm.faces); total += t
         mat = me.materials[0]
         d = {'tris': t, 'material': mat.name, 'double_sided': not mat.use_backface_culling,
              'textures': sorted({n.image.name + ' %dx%d' % tuple(n.image.size) for n in mat.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image}),
              'shape_keys': len(me.shape_keys.key_blocks) - 1 if me.shape_keys else 0,
+             'skinned_to': next((m.object.name for m in o.modifiers if m.type == 'ARMATURE' and m.object), None), 'vertex_groups': sorted(g.name for g in o.vertex_groups),
              'shape_values_on_import': sorted({round(k.value, 3) for k in me.shape_keys.key_blocks[1:]}) if me.shape_keys else []}
         if o.name.startswith('Head'):
             co = np.array([(o.matrix_world @ v.co)[:] for v in me.vertices])
@@ -37,6 +39,7 @@ for lod in ('head_lod0', 'head_lod1', 'head_lod2'):
             d['asymmetric_verts'] = int(sum((round(-x, 4) + 0.0, y, z) not in key for x, y, z in map(tuple, np.round(co, 4))))
             if me.shape_keys: d['shape_names'] = [k.name for k in me.shape_keys.key_blocks[1:]]
         bm.free(); r[o.name] = d
+    r['skeleton'] = [b.name for o in bpy.data.objects if o.type == 'ARMATURE' for b in o.data.bones]
     r['total_tris'] = total; r['file_mb'] = round(os.path.getsize(OUT + lod + '.glb') / 1e6, 2)
     rep[lod] = r
 rep['baked_uv_coverage'] = round(json.load(open(P.WORK + 'stage2.json'))['coverage'], 4)
